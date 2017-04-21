@@ -42,7 +42,7 @@ echo $(date)"- Now executing: Report creation script"
 echo $(date)"- Audit scripts complete. Moving final report from /tmp to this directory."
 
 #go move a copy of diagnostic report into this dir
-cp /tmp/lynis-report.dat ${THISHOST}.dat
+cp /var/log/lynis-report.dat ${THISHOST}.dat
 
 #Advise the user what to do next 
 echo $(date)"- Please send copies of the following files located in this directory to your assessor via secure transmission:"
