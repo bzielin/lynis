@@ -1,0 +1,165 @@
+#!/bin/bash
+
+#========================================================
+#Version information
+#--------------------------------------------------------
+#DATE	  |     NAME		|	REASON		|
+#--------------------------------------------------------
+#3-13-17  | Jon Anderson	| Initial config/test	|
+#--------------------------------------------------------
+#3-14-17  | Jon Anderson	| Testing completed	|
+#--------------------------------------------------------
+#Fortrex Technologies - Lynis-based Audit Scripts for Linux
+#Utilized under GPL
+
+#***Disclaimer: Scripts are provided AS IS without warranty of any kind. 
+#Fortrex Technologies, Inc. (Fortrex) disclaims all implied warranties including, 
+#without limitation, any implied # warranties of merchantability or of fitness for 
+#a particular purpose. The entire risk arising out of the use or performance of the 
+#scripts and provided instructions remains with you. In # no #event shall Fortrex, 
+#its authors, or anyone else involved in the creation, production, or delivery of 
+#the scripts be liable for any damages whatsoever (including, without limitation, 
+#damages for loss of business profits, business interruption, loss of business information, 
+#or other pecuniary loss) arising out of the use of or inability to use the scripts or 
+#instructions, even if Fortrex has been advised of the possibility of such damages.***
+#========================================================
+
+#capture the host name
+THISHOST=$(hostname)
+
+# Define a timestamp function
+timestamp() {
+  date +"%T_%:z_%D"
+}
+
+#Set the array of controls to be tested
+ctrls=( ACCT-9622 
+AUTH-9204
+AUTH-9208 
+AUTH-9216
+AUTH-9218
+AUTH-9228
+AUTH-9262
+AUTH-9282
+AUTH-9283
+AUTH-9286
+AUTH-9328
+DBS-1816
+DBS-1882
+DBS-1884
+DBS-1886
+FILE-6344
+FINT-4350
+FIRE-4512
+FIRE-4513
+FIRE-4520
+FIRE-4590
+HRDN-7230
+HTTP-6710
+INSE-8006
+KRNL-5788
+LOGG-2154
+MACF-6208
+MAIL-8818
+MALW-3280
+MALW-3286
+NAME-4402
+NETW-3014
+PROC-3612
+PKGS-7330
+PKGS-7380
+PKGS-7382
+PKGS-7387
+PKGS-7388
+PKGS-7392
+PKGS-7393
+PKGS-7394
+SHLL-6202
+SHLL-6290
+SNMP-3306
+SQD-3613
+SSH-7408
+SSH-7412
+TIME-3104
+TIME-3106
+TIME-3116
+TIME-3124
+TIME-3128
+TIME-3136)
+
+#provide some overview and then loop through the array
+printf "Audit Report for "
+hostname
+printf "execution started at "
+timestamp
+printf "\n This script redirects STDERR.  Blanks should be interpreted as errors \n"
+printf "indicative of command not found, service not installed, file does not exist \n"
+printf "or package not available.  Confirm with SME if large numbers of blanks are \n"
+printf "observed during validation.\n\n"
+printf "\n==========="
+for i in "${ctrls[@]}"
+do
+   printf "\n Lynis Control:"
+   echo $i
+   printf "=========="
+   ./lynis show details $i
+   printf "\n"
+
+done
+
+#Test additional linux controls, direct errors out
+printf "Enabled, disabled, and locked local users: \n"
+printf "\n--------------\n"
+printf "List local users WITH INTERACTIVE LOGIN ENABLED\n"
+grep -F ':/bin/bash' /etc/passwd 2>/dev/null
+
+printf "\n----------\n"
+printf "List all (potentially) LOCKED local user accts\n"
+grep -F '*' /etc/passwd 2>/dev/null
+
+printf "\n----------\n"
+printf "List all local users with INTERACTIVE LOGIN DISABLED\n"
+grep -F 'nologin' /etc/passwd 2>/dev/null
+
+printf "\n--------------\n"
+printf "Package listing\n"
+#Fedora/RH Pkg listing, suppress errors
+rpm -qa 2>/dev/null
+
+#Debian/Ubuntu pkg listing, suppress errors
+dpkg -l 2>/dev/null
+
+#OpenBSD pkg listing, suppress errors
+pkg_info 2>/dev/null
+
+printf "\n------------\n"
+printf "Check for existence of iptables\n"
+
+#Check for IPtables or NFTables
+lsmod | grep table 2>/dev/null
+
+printf "\n----------\n"
+printf "Listening and connected protocols\n"
+
+#Try the netstat command first; suppress errors
+netstat -nlp 2>/dev/null
+
+printf "\n---END OF NETSTAT---\n\n"
+#It's possible netstat isn't available.  Try ss and suppress errors
+ss -lnt 2>/dev/null
+printf "\n"
+ss -lnu 2>/dev/null
+printf "\n---END OF SS TCP/UDP---\n\n"
+
+printf "\n----------\n"
+printf "Process Tree Begins Below\n"
+printf "=========================\n"
+pstree 2>/dev/null
+printf "\n----------\n"
+printf "End of script. Completed at "
+timestamp
+
+
+
+
+

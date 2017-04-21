@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#========================================================
+#Version information
+#--------------------------------------------------------
+#DATE	  |     NAME		|	REASON		|
+#--------------------------------------------------------
+#3-13-17  | Jon Anderson	| Initial config/test	|
+#--------------------------------------------------------
+#3-14-17  | Jon Anderson	| Testing completed	|
+#--------------------------------------------------------
+#Fortrex Technologies - Lynis-based Audit Scripts for Linux
+#Utilized under GPL
+
+#***Disclaimer: Scripts are provided AS IS without warranty of any kind. 
+#Fortrex Technologies, Inc. (Fortrex) disclaims all implied warranties including, 
+#without limitation, any implied # warranties of merchantability or of fitness for 
+#a particular purpose. The entire risk arising out of the use or performance of the 
+#scripts and provided instructions remains with you. In # no #event shall Fortrex, 
+#its authors, or anyone else involved in the creation, production, or delivery of 
+#the scripts be liable for any damages whatsoever (including, without limitation, 
+#damages for loss of business profits, business interruption, loss of business information, 
+#or other pecuniary loss) arising out of the use of or inability to use the scripts or 
+#instructions, even if Fortrex has been advised of the possibility of such damages.***
+#========================================================
+
+#Set the host name
+THISHOST=$(hostname)
+
+#Show screen output so user is kept informed.
+echo $(date)"- Standby. Audit scripts initiated. This can take up to 10 minutes."
+echo $(date)"- Now executing: Lynis enumeration script"
+
+#call the Lynis audit framework
+./lynis audit system -Q > ${THISHOST}.log
+
+echo $(date)"- Now executing: Report creation script"
+
+#call the report creation script
+./create_report &> ${THISHOST}.txt
+
+echo $(date)"- Audit scripts complete. Moving final report from /tmp to this directory."
+
+#go move a copy of diagnostic report into this dir
+cp /tmp/lynis-report.dat ${THISHOST}.dat
+
+#Advise the user what to do next 
+echo $(date)"- Please send copies of the following files located in this directory to your assessor via secure transmission:"
+echo "Execution output: ${THISHOST}.log"
+echo "Execution diagnostic: ${THISHOST}.dat"
+echo "Enumeration report: ${THISHOST}.txt"
+echo "Thank you.  You may close this terminal session."
